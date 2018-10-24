@@ -4,6 +4,8 @@ import com.example.netty.protocol.command.Packet;
 import com.example.netty.protocol.command.PacketCodec;
 import com.example.netty.protocol.command.request.LoginRequestPacket;
 import com.example.netty.protocol.command.response.LoginResponsePacket;
+import com.example.netty.protocol.command.response.MessageResponsePacket;
+import com.example.netty.util.LoginUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +28,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         loginRequestPacket.setUserName("wangl");
         loginRequestPacket.setPassword("123456");
 
-        ByteBuf requestByteBuf = PacketCodec.INSTANCE.encode(loginRequestPacket);
+        ByteBuf requestByteBuf = PacketCodec.INSTANCE.encode(ctx.alloc(), loginRequestPacket);
         ctx.channel().writeAndFlush(requestByteBuf);
     }
 
@@ -38,10 +40,14 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             LoginResponsePacket loginResponsePacket = (LoginResponsePacket) packet;
 
             if(loginResponsePacket.isSuccess()){
+                LoginUtil.markAsLogin(ctx.channel());
                 System.out.println(new Date() + "：客户端登陆成功");
             } else {
                 System.out.println(new Date() + ": 客户端登陆失败, 原因：" + loginResponsePacket.getReason());
             }
+        } else if (packet instanceof MessageResponsePacket) {
+            MessageResponsePacket messageResponsePacket = (MessageResponsePacket) packet;
+            System.out.println(new Date() + ": 收到服务端的消息: " + messageResponsePacket.getMessage());
         }
     }
 }

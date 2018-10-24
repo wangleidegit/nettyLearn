@@ -3,7 +3,9 @@ package com.example.netty.server;
 import com.example.netty.protocol.command.Packet;
 import com.example.netty.protocol.command.PacketCodec;
 import com.example.netty.protocol.command.request.LoginRequestPacket;
+import com.example.netty.protocol.command.request.MessageRequestPacket;
 import com.example.netty.protocol.command.response.LoginResponsePacket;
+import com.example.netty.protocol.command.response.MessageResponsePacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,7 +41,16 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
             }
 
             //登陆响应
-            ByteBuf responseByteBuf = PacketCodec.INSTANCE.encode(loginResponsePacket);
+            ByteBuf responseByteBuf = PacketCodec.INSTANCE.encode(ctx.alloc(), loginResponsePacket);
+            ctx.channel().writeAndFlush(responseByteBuf);
+        } else if(packet instanceof MessageRequestPacket){
+            MessageRequestPacket messageRequestPacket = (MessageRequestPacket) packet;
+
+            MessageResponsePacket messageResponsePacket = new MessageResponsePacket();
+            System.out.println(new Date() + ": 收到客户端消息: " + messageRequestPacket.getMessage());
+            messageResponsePacket.setMessage("服务端回复【" + messageRequestPacket.getMessage() + "】");
+
+            ByteBuf responseByteBuf = PacketCodec.INSTANCE.encode(ctx.alloc(), messageResponsePacket);
             ctx.channel().writeAndFlush(responseByteBuf);
         }
 

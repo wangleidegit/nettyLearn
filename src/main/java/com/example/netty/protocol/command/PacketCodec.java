@@ -1,7 +1,9 @@
 package com.example.netty.protocol.command;
 
 import com.example.netty.protocol.command.request.LoginRequestPacket;
+import com.example.netty.protocol.command.request.MessageRequestPacket;
 import com.example.netty.protocol.command.response.LoginResponsePacket;
+import com.example.netty.protocol.command.response.MessageResponsePacket;
 import com.example.netty.serialize.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -9,8 +11,7 @@ import io.netty.buffer.ByteBufAllocator;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.netty.protocol.command.Command.LOGIN_REQUEST;
-import static com.example.netty.protocol.command.Command.LOGIN_RESPONSE;
+import static com.example.netty.protocol.command.Command.*;
 
 /**
  * Created by wanglei
@@ -28,14 +29,16 @@ public class PacketCodec {
         packetTypeMap = new HashMap<>();
         packetTypeMap.put(LOGIN_REQUEST, LoginRequestPacket.class);
         packetTypeMap.put(LOGIN_RESPONSE, LoginResponsePacket.class);
+        packetTypeMap.put(MESSAGE_REQUEST, MessageRequestPacket.class);
+        packetTypeMap.put(MESSAGE_RESPONSE, MessageResponsePacket.class);
 
         serialzerMap = new HashMap<>();
         Serializer serializer = Serializer.DEFAULT;
         serialzerMap.put(serializer.getSerializerAlgorithm(), serializer);
     }
 
-    public ByteBuf encode(Packet packet){
-        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.ioBuffer();
+    public ByteBuf encode(ByteBufAllocator byteBufAllocator, Packet packet){
+        ByteBuf byteBuf = byteBufAllocator.ioBuffer();
 
         byte[] bytes = Serializer.DEFAULT.serialize(packet);
 
